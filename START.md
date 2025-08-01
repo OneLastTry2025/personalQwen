@@ -230,22 +230,67 @@ curl -X POST http://127.0.0.1:8001/api/chat \
 
 ## 🔧 Troubleshooting
 
-### Backend Won't Start
-```bash
-# Check backend logs
-tail -n 50 /var/log/supervisor/backend.err.log
+### Backend Won't Start - Common Issues & Solutions
 
-# Common fixes:
-pip install -r /app/requirements.txt
-pip install markupsafe  # Often needed
+#### Issue 1: ModuleNotFoundError: No module named 'markupsafe'
+**Symptoms**: Backend fails to start with markupsafe import error
+**Solution**: 
+```bash
+cd /app/backend
+pip install markupsafe
+sudo supervisorctl restart backend
+```
+
+#### Issue 2: ModuleNotFoundError: No module named 'aiofiles'
+**Symptoms**: Backend fails with missing aiofiles or other dependencies
+**Solution**: 
+```bash
+cd /app/backend
+pip install -r requirements.txt
+sudo supervisorctl restart backend
+```
+
+#### Issue 3: BrowserType.launch: Executable doesn't exist
+**Symptoms**: Playwright browser executable not found
+**Solution**: 
+```bash
+cd /app/backend
+python -m playwright install --with-deps
 python -m playwright install chromium
 sudo supervisorctl restart backend
+```
+
+#### Issue 4: Backend Keeps Restarting/Not Responding
+**Symptoms**: Backend process starts but API calls fail
+**Solution**: 
+```bash
+# Check backend logs first
+tail -n 50 /var/log/supervisor/backend.err.log
+
+# Try manual start for debugging
+sudo supervisorctl stop backend
+cd /app/backend
+python server.py
+
+# If it works manually, start with supervisor
+sudo supervisorctl start backend
+```
+
+#### Issue 5: Authentication File Issues
+**Symptoms**: FileNotFoundError: Authentication file not found
+**Solution**: 
+```bash
+# Verify the storage_state.json exists and has content
+ls -la /app/backend/storage_state.json
+cat /app/backend/storage_state.json | head -20
+
+# If missing or corrupted, you need to regenerate using the extension
 ```
 
 ### Playwright Browser Issues
 ```bash
 # Install all Playwright browsers
-cd /app && python -m playwright install
+cd /app/backend && python -m playwright install
 
 # Or install just Chromium with correct path
 PLAYWRIGHT_BROWSERS_PATH=/root/.cache/ms-playwright \
@@ -261,15 +306,21 @@ sudo supervisorctl restart backend
 curl -I http://127.0.0.1:3000
 
 # Should return: HTTP/1.0 200 OK
+
+# If frontend won't start, check if port 3000 is available
+netstat -tulpn | grep 3000
 ```
 
 ### API Not Responding
 ```bash
-# Test basic connectivity
+# Test basic connectivity with detailed output
 curl -v http://127.0.0.1:8001/api/model
 
 # Check if backend process is running
 ps aux | grep server.py
+
+# Check backend is bound to correct port
+netstat -tulpn | grep 8001
 ```
 
 ## 📁 Key Files & Directories
