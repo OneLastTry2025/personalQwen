@@ -12,7 +12,7 @@ The **HTTP ERROR 502** has been fixed! The server is now properly configured for
 
 ### 🌐 **Access URLs:**
 
-- **External Domain**: https://7a4072a0-66be-4317-a63c-b93287ea3ff6.preview.emergentagent.com
+- **External Domain**: https://08087b24-d133-459f-97d8-0914e68e7106.preview.emergentagent.com
 - **Local Access**: http://127.0.0.1:5000
 - **Direct IP**: http://0.0.0.0:5000
 
@@ -37,7 +37,7 @@ The **HTTP ERROR 502** has been fixed! The server is now properly configured for
 ### 🚀 **Ready to Use!**
 
 You can now access the application at:
-**https://7a4072a0-66be-4317-a63c-b93287ea3ff6.preview.emergentagent.com**
+**https://08087b24-d133-459f-97d8-0914e68e7106.preview.emergentagent.com**
 
 The Qwen Clone application is fully functional and ready for use with external domain access!
 
