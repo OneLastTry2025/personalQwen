@@ -10,7 +10,7 @@ import json
 from datetime import datetime
 
 class QwenAPITester:
-    def __init__(self, base_url="https://4324c0bf-c66e-403a-9980-5099d569020b.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://4ff9a573-72cf-4a90-b8b5-38a7c413029a.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
