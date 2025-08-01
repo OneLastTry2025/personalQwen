@@ -596,8 +596,55 @@ document.addEventListener('DOMContentLoaded', () => {
         updateProgress('Events', 'File upload registered');
     }
     
-    // Thinking Mode Toggle
-    if (thinkingButton) {
+    // Thinking Mode Toggle with Dropdown
+    if (thinkingButton && thinkingDropdown) {
+        thinkingButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            thinkingDropdownVisible = !thinkingDropdownVisible;
+            
+            if (thinkingDropdownVisible) {
+                showElement(thinkingDropdown);
+                updateProgress('Thinking Dropdown', 'Opened');
+            } else {
+                hideElement(thinkingDropdown);
+                updateProgress('Thinking Dropdown', 'Closed');
+            }
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', () => {
+            if (thinkingDropdownVisible) {
+                thinkingDropdownVisible = false;
+                hideElement(thinkingDropdown);
+            }
+        });
+        
+        // Handle thinking option selection
+        const thinkingOptions = thinkingDropdown.querySelectorAll('.thinking-option');
+        thinkingOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                const thinkingMode = option.getAttribute('data-thinking');
+                thinkingModeEnabled = (thinkingMode === 'on');
+                
+                // Update button appearance
+                if (thinkingModeEnabled) {
+                    thinkingButton.classList.add('bg-purple-100', 'text-purple-700', 'dark:bg-purple-900', 'dark:text-purple-300');
+                } else {
+                    thinkingButton.classList.remove('bg-purple-100', 'text-purple-700', 'dark:bg-purple-900', 'dark:text-purple-300');
+                }
+                
+                // Hide dropdown
+                thinkingDropdownVisible = false;
+                hideElement(thinkingDropdown);
+                
+                updateProgress('Thinking Mode', thinkingModeEnabled ? 'Enabled' : 'Disabled');
+                console.log(`🧠 Thinking mode: ${thinkingModeEnabled ? 'ON' : 'OFF'}`);
+            });
+        });
+        
+        updateProgress('Events', 'Thinking mode dropdown registered');
+    } else if (thinkingButton) {
+        // Fallback for simple toggle if dropdown not available
         thinkingButton.addEventListener('click', () => {
             thinkingModeEnabled = !thinkingModeEnabled;
             if (thinkingModeEnabled) {
