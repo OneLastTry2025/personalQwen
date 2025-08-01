@@ -403,75 +403,114 @@ async def model_handler():
         browser_manager.release_page(page)
     return jsonify(result), 200 if result['status'] == 'success' else 500
 
-@app.route('/api/model_count', methods=['GET'])
-async def model_count_handler():
+@app.route('/api/test_models', methods=['POST'])
+async def test_models_handler():
     """
-    API endpoint to get detailed model count information including live count from Qwen.
+    API endpoint to test various models with a simple prompt to see which ones work.
     """
-    page = await browser_manager.get_page()
-    try:
-        print("[*] Fetching live model count from Qwen...")
-        
-        # Navigate to main page if needed
-        if "/c/" in page.url:
-            await page.goto(QWEN_URL, wait_until="networkidle")
-        
-        # Try to get the live model count by attempting to open model selector
+    data = await request.get_json()
+    test_prompt = data.get('prompt', 'Hello, can you respond briefly?')
+    models_to_test = data.get('models', [
+        'Qwen3-235B-A22B-2507',
+        'Qwen3-Plus', 
+        'Qwen3-Coder-32B-Instruct',
+        'Qwen2.5-Turbo',
+        'Qwen-Max',
+        'Qwen-Turbo',
+        'Qwen2.5-72B-Instruct',
+        'Qwen2.5-32B-Instruct'
+    ])
+    
+    results = {}
+    
+    for model in models_to_test:
+        page = await browser_manager.get_page()
         try:
-            model_selector_button = page.locator('#model-selector-button')
-            await model_selector_button.wait_for(state="visible", timeout=10000)
-            await model_selector_button.click()
+            print(f"[*] Testing model: {model}")
             
-            # Wait for dropdown and count models
-            dropdown_menu = page.locator('div[role="menu"]')
-            await dropdown_menu.wait_for(state="visible", timeout=10000)
+            # Navigate to a fresh chat
+            await page.goto(QWEN_URL, wait_until="networkidle")
             
-            model_items = dropdown_menu.locator('a[role="menuitem"]')
-            live_count = await model_items.count()
+            # Try to select the model
+            try:
+                model_selector_button = page.locator('#model-selector-button')
+                await model_selector_button.click()
+                dropdown_menu = page.locator('div[role="menu"]')
+                await dropdown_menu.wait_for(state="visible", timeout=10000)
+                
+                # Try to find and click the model
+                model_option = dropdown_menu.locator(f'a:has-text("{model}")')
+                await model_option.click(timeout=5000)
+                await dropdown_menu.wait_for(state="hidden", timeout=5000)
+                
+                print(f"[+] Successfully selected model: {model}")
+                model_selection_success = True
+            except Exception as e:
+                print(f"[!] Could not select model {model}: {e}")
+                model_selection_success = False
             
-            # Close dropdown
-            await page.locator('body').click()
-            
-            result = {
-                "status": "success",
-                "live_count": live_count,
-                "static_count": 15,  # Our hardcoded models in the UI
-                "categories": {
-                    "latest": 3,
-                    "standard": 7,
-                    "specialized": 5
-                },
-                "details": {
-                    "source": "live_qwen_data",
-                    "last_updated": "real_time"
+            # Try to send a test message
+            try:
+                chat_input = page.locator("textarea#chat-input")
+                await chat_input.wait_for(timeout=10000)
+                await chat_input.fill(test_prompt)
+                await chat_input.press('Enter')
+                
+                # Wait for response
+                last_response_container = page.locator('.response-meesage-container').last
+                regenerate_button = last_response_container.locator("button.regenerate-response-button")
+                await regenerate_button.wait_for(state="visible", timeout=45000)
+                
+                response_text = await last_response_container.locator('.markdown-content-container').inner_text()
+                
+                results[model] = {
+                    "status": "success",
+                    "model_selection": model_selection_success,
+                    "response_received": True,
+                    "response_preview": response_text[:100] + "..." if len(response_text) > 100 else response_text,
+                    "response_length": len(response_text)
                 }
-            }
-            print(f"[+] Live model count: {live_count}")
-            
+                print(f"[+] Model {model} working: Got {len(response_text)} characters")
+                
+            except Exception as e:
+                results[model] = {
+                    "status": "error",
+                    "model_selection": model_selection_success,
+                    "response_received": False,
+                    "error": str(e),
+                    "error_type": "response_timeout" if "Timeout" in str(e) else "other"
+                }
+                print(f"[!] Model {model} failed: {e}")
+                
         except Exception as e:
-            print(f"[!] Could not get live count, using static data: {e}")
-            # Fallback to static count
-            result = {
-                "status": "success",
-                "live_count": None,
-                "static_count": 15,
-                "categories": {
-                    "latest": 3,
-                    "standard": 7,
-                    "specialized": 5
-                },
-                "details": {
-                    "source": "static_data",
-                    "error": str(e)
-                }
+            results[model] = {
+                "status": "error",
+                "model_selection": False,
+                "response_received": False,
+                "error": str(e),
+                "error_type": "navigation_error"
             }
-            
-    except Exception as e:
-        print(f"\n[!] An error occurred while fetching model count: {e}")
-        result = {"status": "error", "message": str(e)}
-    finally:
-        browser_manager.release_page(page)
-    return jsonify(result), 200 if result['status'] == 'success' else 500
+            print(f"[!] Model {model} completely failed: {e}")
+        finally:
+            browser_manager.release_page(page)
+    
+    # Summary
+    working_models = [m for m, r in results.items() if r['status'] == 'success']
+    partially_working = [m for m, r in results.items() if r.get('model_selection') and not r.get('response_received')]
+    failed_models = [m for m, r in results.items() if r['status'] == 'error' and not r.get('model_selection')]
+    
+    summary = {
+        "status": "success",
+        "test_prompt": test_prompt,
+        "total_tested": len(models_to_test),
+        "working_models": working_models,
+        "working_count": len(working_models),
+        "partially_working": partially_working,
+        "failed_models": failed_models,
+        "detailed_results": results
+    }
+    
+    return jsonify(summary), 200
 
 # --- Frontend Serving ---
 @app.route('/')
