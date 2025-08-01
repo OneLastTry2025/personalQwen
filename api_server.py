@@ -432,6 +432,6 @@ async def serve_assets(filename):
 if __name__ == '__main__':
     print("[*] Starting Qwen API server...")
     print("[*] This server will launch a persistent browser in the background.")
-    print("[*] Listening on http://0.0.0.0:5000")
-    print("[*] Open http://127.0.0.1:5000 in your browser to use the web UI.")
-    app.run(host='0.0.0.0', port=5000)
+    print("[*] Listening on http://0.0.0.0:80")
+    print("[*] Open http://127.0.0.1:80 in your browser to use the web UI.")
+    app.run(host='0.0.0.0', port=80)
