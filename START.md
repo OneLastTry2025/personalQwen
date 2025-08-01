@@ -10,6 +10,22 @@ This is a **Qwen AI Automation System** that provides a web-based interface to i
 - ⚡ **Persistent Sessions** - Maintains authenticated browser sessions
 - 📁 **File Upload** - Support for file attachments in conversations
 
+## ⚡ Quick Setup (If First Time)
+
+If you're setting this up for the first time, run these commands:
+
+```bash
+# Install Python dependencies
+cd /app && pip install -r requirements.txt
+pip install markupsafe
+
+# Install Playwright browsers
+python -m playwright install chromium
+
+# Start all services
+sudo supervisorctl start all
+```
+
 ## ⚡ Quick Start (5 Minutes)
 
 ### 1. Check System Status
