@@ -333,38 +333,69 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    // Model count functionality
-    function updateModelCount() {
+    // Enhanced model count functionality with live data
+    async function updateModelCount() {
         const modelDropdown = document.getElementById('model-dropdown');
         const modelCountBadge = document.getElementById('model-count-badge');
         
         if (modelDropdown && modelCountBadge) {
-            // Count all model options by finding elements with data-model attribute
+            // Count static models from HTML first
             const modelItems = modelDropdown.querySelectorAll('[data-model]');
-            const totalModels = modelItems.length;
+            const staticCount = modelItems.length;
             
-            // Count by category
-            const latestModels = 3; // Manually counted from HTML
-            const standardModels = 7; // Manually counted from HTML  
-            const specializedModels = 5; // Manually counted from HTML
+            // Show static count immediately
+            modelCountBadge.textContent = `${staticCount} Models`;
             
-            // Update the badge
-            modelCountBadge.textContent = `${totalModels} Models`;
+            try {
+                // Try to get live count from backend
+                updateProgress('Model Count', 'Fetching live model count...');
+                const response = await fetch(`${API_BASE}/model_count`);
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    const liveCount = data.live_count;
+                    const categories = data.categories;
+                    
+                    if (liveCount !== null) {
+                        // Update with live count
+                        modelCountBadge.textContent = `${liveCount} Models (Live)`;
+                        modelCountBadge.classList.add('bg-green-100', 'text-green-800');
+                        modelCountBadge.classList.remove('bg-purple-100', 'text-purple-800');
+                        
+                        console.log(`📊 Live Model Count from Qwen: ${liveCount}`);
+                        console.log(`📊 Static Model Count in UI: ${staticCount}`);
+                        updateProgress('Model Count', `Live: ${liveCount} models, Static: ${staticCount} models`);
+                    } else {
+                        // Fallback to enhanced static display
+                        modelCountBadge.textContent = `${staticCount} Models`;
+                        console.log(`📊 Using Static Model Count: ${staticCount}`);
+                        updateProgress('Model Count', `Static: ${staticCount} models (live unavailable)`);
+                    }
+                    
+                    // Log detailed breakdown
+                    console.log(`📊 Model Categories:`);
+                    console.log(`  • Latest Models: ${categories.latest}`);
+                    console.log(`  • Standard Models: ${categories.standard}`);
+                    console.log(`  • Specialized Models: ${categories.specialized}`);
+                    
+                    return {
+                        total: liveCount || staticCount,
+                        live: liveCount,
+                        static: staticCount,
+                        categories: categories
+                    };
+                }
+            } catch (error) {
+                console.log(`⚠️ Could not fetch live model count: ${error.message}`);
+                updateProgress('Model Count', `Using static count: ${staticCount} models`);
+            }
             
-            // Update console log with details
-            console.log(`📊 Model Count Summary:`);
-            console.log(`  • Total Models: ${totalModels}`);
-            console.log(`  • Latest Models: ${latestModels}`);
-            console.log(`  • Standard Models: ${standardModels}`);
-            console.log(`  • Specialized Models: ${specializedModels}`);
-            
-            updateProgress('Model Count', `${totalModels} models available`);
-            
+            // Default return for fallback
             return {
-                total: totalModels,
-                latest: latestModels,
-                standard: standardModels,
-                specialized: specializedModels
+                total: staticCount,
+                live: null,
+                static: staticCount,
+                categories: { latest: 3, standard: 7, specialized: 5 }
             };
         }
     }
