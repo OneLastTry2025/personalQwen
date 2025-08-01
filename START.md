@@ -12,18 +12,77 @@ This is a **Qwen AI Automation System** that provides a web-based interface to i
 
 ## ⚡ Quick Setup (If First Time)
 
-If you're setting this up for the first time, run these commands:
+If you're setting this up for the first time, follow these exact steps that were tested and verified:
 
+### Step 1: Install Python Dependencies
 ```bash
-# Install Python dependencies
-cd /app && pip install -r requirements.txt
-pip install markupsafe
+# Navigate to backend directory
+cd /app/backend
 
-# Install Playwright browsers
+# Install all Python dependencies from requirements.txt
+pip install -r requirements.txt
+
+# Install additional required module
+pip install markupsafe
+```
+
+### Step 2: Install Playwright Browsers
+```bash
+# Stay in backend directory
+cd /app/backend
+
+# Install all Playwright browsers with dependencies (this takes time)
+python -m playwright install --with-deps
+
+# Verify chromium installation specifically
 python -m playwright install chromium
+```
+
+### Step 3: Verify Authentication File
+```bash
+# Check if storage_state.json exists in backend directory
+ls -la /app/backend/storage_state.json
+
+# If missing, you need to run receive_auth_state.py and use the extension
+# The file should contain valid Qwen session authentication data
+```
+
+### Step 4: Start Services with Supervisor
+```bash
+# Check current status
+sudo supervisorctl status
 
 # Start all services
 sudo supervisorctl start all
+
+# If backend fails, restart specifically
+sudo supervisorctl restart backend
+```
+
+### Step 5: Manual Backend Start (If Supervisor Issues)
+```bash
+# If supervisor has issues, start backend manually
+cd /app/backend
+python server.py > /tmp/backend.log 2>&1 &
+
+# Check if it's running
+curl -X GET http://127.0.0.1:8001/api/model
+```
+
+### Step 6: Verify Everything is Working
+```bash
+# Test backend API
+curl -X GET http://127.0.0.1:8001/api/model
+# Expected: {"model_name":"Qwen3-235B-A22B-2507","status":"success"}
+
+# Test frontend
+curl -I http://127.0.0.1:3000
+# Expected: HTTP/1.0 200 OK
+
+# Test a basic chat
+curl -X POST http://127.0.0.1:8001/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "Hello, how are you?"}'
 ```
 
 ## ⚡ Quick Start (5 Minutes)
