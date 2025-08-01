@@ -80,7 +80,7 @@ show_status() {
         fi
         
         # Test API endpoint
-        api_status=$(curl -s -X GET http://127.0.0.1:5000/model 2>/dev/null | grep -o '"status":"success"')
+        api_status=$(curl -s -X GET http://127.0.0.1:80/model 2>/dev/null | grep -o '"status":"success"')
         if [ -n "$api_status" ]; then
             echo "   ✅ API endpoints working"
         else
