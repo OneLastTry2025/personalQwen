@@ -342,7 +342,7 @@ async def image_handler():
 
     return jsonify(result), 200 if result['status'] == 'success' else 500
 
-@app.route('/history', methods=['GET'])
+@app.route('/api/history', methods=['GET'])
 async def history_handler():
     """
     Flask endpoint to fetch the user's chat history.
