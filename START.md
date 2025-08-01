@@ -20,6 +20,8 @@ sudo supervisorctl status
 # Expected output:
 # backend    RUNNING   pid XXXX, uptime X:XX:XX  
 # frontend   RUNNING   pid XXXX, uptime X:XX:XX
+# mongodb    RUNNING   pid XXXX, uptime X:XX:XX
+# code-server RUNNING  pid XXXX, uptime X:XX:XX
 ```
 
 ### 2. Start Services (if needed)
@@ -43,6 +45,16 @@ curl http://127.0.0.1:8001/api/model
 
 # Expected response:
 # {"model_name":"Qwen3-235B-A22B-2507","status":"success"}
+
+# Test chat functionality
+curl -X POST http://127.0.0.1:8001/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "Hello, how are you?"}'
+
+# Test image generation
+curl -X POST http://127.0.0.1:8001/api/image \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "A simple test image"}'
 ```
 
 ## 🛠️ Service Management
