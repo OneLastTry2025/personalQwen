@@ -53,6 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isLoading = false;
     let webSearchEnabled = false;
     let thinkingModeEnabled = false;
+    let thinkingDropdownVisible = false;
     let selectedAgent = null;
     let moreDropdownVisible = false;
     let sidebarVisible = false;
