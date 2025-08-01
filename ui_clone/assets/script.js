@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const fileUploadButton = document.getElementById('file-upload-button');
     const fileInput = document.getElementById('file-input');
     const thinkingButton = document.getElementById('thinking-button');
+    const thinkingDropdown = document.getElementById('thinking-dropdown');
     const searchButton = document.getElementById('search-button');
     
     // More Button Functionality
