@@ -395,7 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 total: staticCount,
                 live: null,
                 static: staticCount,
-                categories: { latest: 3, standard: 7, specialized: 5 }
+                categories: { latest: 4, standard: 7, specialized: 5 }
             };
         }
     }
