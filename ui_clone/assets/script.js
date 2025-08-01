@@ -333,9 +333,41 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    // ==========================================
-    // API FUNCTIONS
-    // ==========================================
+    // Model count functionality
+    function updateModelCount() {
+        const modelDropdown = document.getElementById('model-dropdown');
+        const modelCountBadge = document.getElementById('model-count-badge');
+        
+        if (modelDropdown && modelCountBadge) {
+            // Count all model options by finding elements with data-model attribute
+            const modelItems = modelDropdown.querySelectorAll('[data-model]');
+            const totalModels = modelItems.length;
+            
+            // Count by category
+            const latestModels = 3; // Manually counted from HTML
+            const standardModels = 7; // Manually counted from HTML  
+            const specializedModels = 5; // Manually counted from HTML
+            
+            // Update the badge
+            modelCountBadge.textContent = `${totalModels} Models`;
+            
+            // Update console log with details
+            console.log(`📊 Model Count Summary:`);
+            console.log(`  • Total Models: ${totalModels}`);
+            console.log(`  • Latest Models: ${latestModels}`);
+            console.log(`  • Standard Models: ${standardModels}`);
+            console.log(`  • Specialized Models: ${specializedModels}`);
+            
+            updateProgress('Model Count', `${totalModels} models available`);
+            
+            return {
+                total: totalModels,
+                latest: latestModels,
+                standard: standardModels,
+                specialized: specializedModels
+            };
+        }
+    }
     
     async function sendMessage(message, agent = null, files = null) {
         if (!message.trim() || isLoading) return;
