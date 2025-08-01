@@ -272,7 +272,7 @@ async def ask_qwen(page: Page, prompt: str, chat_id: str = None, use_web_search:
                     print(f"[!] Error cleaning up file {path}: {e}")
 
 # --- API Endpoints ---
-@app.route('/chat', methods=['POST'])
+@app.route('/api/chat', methods=['POST'])
 async def chat_handler():
     # Handle both JSON and multipart/form-data requests
     if 'multipart/form-data' in request.content_type:
