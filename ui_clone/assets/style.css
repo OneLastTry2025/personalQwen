@@ -199,17 +199,21 @@ input[type="text"]:focus, textarea:focus {
     transition: transform 0.3s ease-in-out;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1023px) {
     #sidebar {
         position: fixed;
         top: 0;
         left: 0;
         z-index: 50;
         height: 100vh;
+    }
+    
+    /* Let JavaScript and Tailwind classes handle the transform */
+    #sidebar.-translate-x-full {
         transform: translateX(-100%);
     }
     
-    #sidebar:not(.hidden) {
+    #sidebar.translate-x-0 {
         transform: translateX(0);
     }
 }
