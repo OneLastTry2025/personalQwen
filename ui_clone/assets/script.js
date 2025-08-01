@@ -973,6 +973,178 @@ document.addEventListener('DOMContentLoaded', () => {
         updateProgress('Events', 'Voice input button registered');
     }
     
+    // Enhanced Functions for New Features
+    
+    function toggleVoiceInput() {
+        if (!('webkitSpeechRecognition' in window)) {
+            alert('Voice recognition is not supported in this browser.');
+            return;
+        }
+        
+        if (isVoiceRecording) {
+            // Stop recording
+            if (voiceRecognition) {
+                voiceRecognition.stop();
+            }
+            isVoiceRecording = false;
+            voiceInputButton.classList.remove('bg-red-100', 'text-red-700');
+            voiceInputButton.title = 'Voice input';
+        } else {
+            // Start recording
+            voiceRecognition = new webkitSpeechRecognition();
+            voiceRecognition.continuous = false;
+            voiceRecognition.interimResults = false;
+            voiceRecognition.lang = 'en-US';
+            
+            voiceRecognition.onstart = () => {
+                isVoiceRecording = true;
+                voiceInputButton.classList.add('bg-red-100', 'text-red-700');
+                voiceInputButton.title = 'Recording... Click to stop';
+            };
+            
+            voiceRecognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                if (mainChatInput) {
+                    mainChatInput.value = transcript;
+                    mainChatInput.focus();
+                }
+                updateProgress('Voice Input', 'Transcript received', transcript);
+            };
+            
+            voiceRecognition.onerror = (event) => {
+                console.error('Voice recognition error:', event.error);
+                isVoiceRecording = false;
+                voiceInputButton.classList.remove('bg-red-100', 'text-red-700');
+            };
+            
+            voiceRecognition.onend = () => {
+                isVoiceRecording = false;
+                voiceInputButton.classList.remove('bg-red-100', 'text-red-700');
+                voiceInputButton.title = 'Voice input';
+            };
+            
+            voiceRecognition.start();
+        }
+    }
+    
+    async function testSelectedModels() {
+        if (isLoading) return;
+        
+        setLoadingState(true);
+        testModelsButton.classList.add('btn-loading');
+        
+        try {
+            const response = await fetch(`${API_BASE}/test_models`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    prompt: 'Hello, can you respond briefly?',
+                    models: ['Qwen3-235B-A22B-2507', 'Qwen3-Plus', 'Qwen3-Coder-32B-Instruct', 'Qwen-Turbo']
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.status === 'success') {
+                const results = `Model Test Results:\n✅ Working: ${data.working_count}/${data.total_tested}\n✅ Models: ${data.working_models.join(', ')}\n❌ Failed: ${data.failed_models.join(', ')}`;
+                alert(results);
+                updateProgress('Model Testing', `Tested ${data.total_tested} models`, `${data.working_count} working`);
+            } else {
+                alert('Model testing failed: ' + data.message);
+            }
+            
+        } catch (error) {
+            console.error('Model testing error:', error);
+            alert('Model testing failed: ' + error.message);
+        } finally {
+            setLoadingState(false);
+            testModelsButton.classList.remove('btn-loading');
+        }
+    }
+    
+    function handleQuickAction(action) {
+        switch (action) {
+            case 'clear':
+                if (confirm('Are you sure you want to clear the current chat?')) {
+                    resetToWelcome();
+                    messageCounter = 0;
+                    updateUIStats();
+                }
+                break;
+            case 'export':
+                exportChatHistory();
+                break;
+            case 'share':
+                shareChatLink();
+                break;
+            case 'feedback':
+                openFeedbackDialog();
+                break;
+            default:
+                console.log(`Quick action: ${action}`);
+        }
+    }
+    
+    function exportChatHistory() {
+        const messages = document.querySelectorAll('#messages-container .message-container');
+        let chatText = 'Qwen Chat Export\n================\n\n';
+        
+        messages.forEach(msg => {
+            const isUser = msg.classList.contains('user-message');
+            const content = msg.querySelector('.message-content')?.textContent || '';
+            chatText += `${isUser ? 'You' : 'Qwen'}: ${content}\n\n`;
+        });
+        
+        const blob = new Blob([chatText], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `qwen-chat-${Date.now()}.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+    
+    function shareChatLink() {
+        if (currentChatId) {
+            const shareUrl = `${window.location.origin}/?chat=${currentChatId}`;
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Qwen Chat',
+                    url: shareUrl
+                });
+            } else {
+                navigator.clipboard.writeText(shareUrl);
+                alert('Chat link copied to clipboard!');
+            }
+        } else {
+            alert('No active chat to share');
+        }
+    }
+    
+    function openFeedbackDialog() {
+        const feedback = prompt('Please share your feedback about this chat session:');
+        if (feedback && feedback.trim()) {
+            console.log('User feedback:', feedback);
+            alert('Thank you for your feedback!');
+        }
+    }
+    
+    function updateUIStats() {
+        if (messageCount) messageCount.textContent = `${messageCounter} messages`;
+        if (sessionTime) {
+            const elapsed = Math.floor((Date.now() - sessionStartTime) / 60000);
+            sessionTime.textContent = `${elapsed}m`;
+        }
+        if (modelsAvailable) modelsAvailable.textContent = '16 models';
+        if (currentModelStatus) currentModelStatus.textContent = currentModelName?.textContent || 'Loading...';
+        if (responseSpeed) responseSpeed.textContent = webSearchEnabled ? 'Detailed response' : 'Fast response';
+    }
+    
+    // Update stats every minute
+    setInterval(updateUIStats, 60000);
+    
     // ==========================================
     // INITIALIZATION
     // ==========================================
