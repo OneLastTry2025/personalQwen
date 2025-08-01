@@ -47,17 +47,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatTextarea = document.getElementById('chat-textarea');
     const chatSendButton = document.getElementById('chat-send-button');
     
-    // Application State
-    let currentState = 'welcome'; // 'welcome', 'chatting'
-    let currentChatId = null;
-    let isLoading = false;
-    let webSearchEnabled = false;
-    let thinkingModeEnabled = false;
-    let thinkingDropdownVisible = false;
-    let selectedAgent = null;
-    let moreDropdownVisible = false;
-    let sidebarVisible = false;
-    let selectedFiles = [];
+    // Enhanced DOM elements
+    const voiceInputButton = document.getElementById('voice-input-button');
+    const cameraInputButton = document.getElementById('camera-input-button');
+    const testModelsButton = document.getElementById('test-models-button');
+    const voiceInput = document.getElementById('voice-input');
+    const cameraInput = document.getElementById('camera-input');
+    const quickActionButtons = document.querySelectorAll('.quick-action-btn');
+    const currentModelStatus = document.getElementById('current-model-status');
+    const responseSpeed = document.getElementById('response-speed');
+    const messageCount = document.getElementById('message-count');
+    const sessionTime = document.getElementById('session-time');
+    const modelsAvailable = document.getElementById('models-available');
+    
+    // Enhanced state management
+    let messageCounter = 0;
+    let sessionStartTime = Date.now();
+    let isVoiceRecording = false;
+    let voiceRecognition = null;
     
     // API Configuration
     const API_BASE = '/api';
