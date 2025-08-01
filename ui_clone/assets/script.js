@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let useWebSearch = false; // For Mission 3
 
     // --- Constants ---
-    const API_BASE_URL = 'http://127.0.0.1:5000';
+    const API_BASE_URL = ''; // Use relative URLs to work with any domain
     const sendButtonIcon = `<i class="iconfont leading-none icon-line-waveform !text-20 text-[#ffffff]" style=""></i>`;
     const loadingSpinner = `<div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>`;
 
