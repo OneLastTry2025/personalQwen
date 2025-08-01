@@ -68,7 +68,8 @@ show_status() {
     check_server
     
     if pgrep -f "api_server.py" > /dev/null; then
-        echo "📡 Server URL: http://127.0.0.1:5000"
+        echo "📡 Server URL: http://0.0.0.0:5000 (External access enabled)"
+        echo "🌐 Local access: http://127.0.0.1:5000"
         echo "🔍 Test connection:"
         status_code=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:5000/ 2>/dev/null)
         if [ "$status_code" = "200" ]; then
