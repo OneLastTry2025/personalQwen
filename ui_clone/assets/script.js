@@ -425,6 +425,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Add user message immediately
         addMessage('user', message);
+        messageCounter++;
+        updateUIStats();
         
         // If this is the first message, transition to chat mode
         if (currentState === 'welcome') {
