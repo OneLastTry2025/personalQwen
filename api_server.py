@@ -403,7 +403,7 @@ async def model_handler():
         browser_manager.release_page(page)
     return jsonify(result), 200 if result['status'] == 'success' else 500
 
-@app.route('/models', methods=['GET'])
+@app.route('/api/models', methods=['GET'])
 async def models_handler():
     """
     Flask endpoint to fetch the list of available models.
