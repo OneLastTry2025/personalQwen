@@ -887,6 +887,9 @@ document.addEventListener('DOMContentLoaded', () => {
         loadModelInfo();
         loadChatHistory();
         
+        // Update model count display
+        updateModelCount();
+        
         // Set initial state - always show welcome in logged-in interface
         resetToWelcome();
         
@@ -897,17 +900,20 @@ document.addEventListener('DOMContentLoaded', () => {
             hideSidebar();
         }
         
+        const modelStats = updateModelCount();
+        
         updateProgress('Initialize', 'Application ready');
         console.log("✅ Qwen Clone initialized successfully!");
         console.log("📊 Features enabled:");
         console.log("  - ✅ Collapsible sidebar");
-        console.log("  - ✅ 8 model selection options");
+        console.log(`  - ✅ ${modelStats?.total || 15} model selection options`);
         console.log("  - ✅ File upload support");
         console.log("  - ✅ Thinking mode toggle");
         console.log("  - ✅ Web search toggle");
         console.log("  - ✅ 7 specialized action buttons");
         console.log("  - ✅ Enhanced chat interface");
         console.log("  - ✅ Progressive enhancement");
+        console.log("  - ✅ Model count display");
     }
     
     // Window resize handler
