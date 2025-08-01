@@ -20,16 +20,16 @@ async def serve_assets(filename):
     """Serves static files from the ui_clone/assets directory."""
     return await send_from_directory(Path('ui_clone') / 'assets', filename)
 
-# Mock endpoints for preview
-@app.route('/test')
+# Mock endpoints for preview with /api prefix
+@app.route('/api/test')
 async def test():
     return jsonify({"status": "success", "message": "Backend is running!"})
 
-@app.route('/model', methods=['GET'])
+@app.route('/api/model', methods=['GET'])
 async def model():
     return jsonify({"status": "success", "model_name": "Qwen3-235B-A22B-2507"})
 
-@app.route('/chat', methods=['POST'])
+@app.route('/api/chat', methods=['POST'])
 async def chat():
     data = await request.get_json() or {}
     prompt = data.get('prompt', 'Hello')
