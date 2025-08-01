@@ -60,7 +60,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const sessionTime = document.getElementById('session-time');
     const modelsAvailable = document.getElementById('models-available');
     
-    // Enhanced state management
+    // Enhanced state management (keeping original + new)
+    let currentState = 'welcome'; // 'welcome', 'chatting'
+    let currentChatId = null;
+    let isLoading = false;
+    let webSearchEnabled = false;
+    let thinkingModeEnabled = false;
+    let thinkingDropdownVisible = false;
+    let selectedAgent = null;
+    let moreDropdownVisible = false;
+    let sidebarVisible = false;
+    let selectedFiles = [];
     let messageCounter = 0;
     let sessionStartTime = Date.now();
     let isVoiceRecording = false;
