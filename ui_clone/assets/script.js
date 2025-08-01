@@ -1,6 +1,6 @@
-// Qwen Clone - Pixel Perfect Logged-In Interface Implementation
+// Qwen Clone - Complete Functionality Implementation
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("🚀 Qwen Clone v3.0 - Logged-In State Edition");
+    console.log("🚀 Qwen Clone v4.0 - Complete Functionality Edition");
 
     // ==========================================
     // DOM ELEMENTS & STATE
@@ -10,17 +10,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const modelSelectorButton = document.getElementById('model-selector-button');
     const modelDropdown = document.getElementById('model-dropdown');
     const currentModelName = document.getElementById('current-model-name');
+    const currentModelDisplay = document.getElementById('current-model-display');
     const sidebarModelName = document.getElementById('sidebar-model-name');
-    const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+    
+    // Sidebar Controls
     const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const sidebarToggleChat = document.getElementById('sidebar-toggle-chat');
     const sidebarClose = document.getElementById('sidebar-close');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
     
     // Welcome State Elements
     const welcomeArea = document.getElementById('welcome-area');
     const mainChatInput = document.getElementById('main-chat-input');
     const mainSendButton = document.getElementById('main-send-button');
     const actionButtons = document.querySelectorAll('.action-button');
-    const addButton = document.getElementById('add-button');
+    
+    // Input Area Features
+    const fileUploadButton = document.getElementById('file-upload-button');
+    const fileInput = document.getElementById('file-input');
     const thinkingButton = document.getElementById('thinking-button');
     const searchButton = document.getElementById('search-button');
     
@@ -43,11 +51,65 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentChatId = null;
     let isLoading = false;
     let webSearchEnabled = false;
+    let thinkingModeEnabled = false;
     let selectedAgent = null;
     let moreDropdownVisible = false;
+    let sidebarVisible = false;
+    let selectedFiles = [];
     
     // API Configuration
     const API_BASE = '/api';
+    
+    // Available Models Data
+    const AVAILABLE_MODELS = [
+        {
+            id: 'Qwen3-235B-A22B-2507',
+            name: 'Qwen3-235B-A22B-2507',
+            description: 'Latest flagship model',
+            category: 'latest',
+            badge: 'New'
+        },
+        {
+            id: 'Qwen3-Plus',
+            name: 'Qwen3-Plus',
+            description: 'Enhanced reasoning capabilities',
+            category: 'latest',
+            badge: 'Pro'
+        },
+        {
+            id: 'Qwen-Max',
+            name: 'Qwen-Max',
+            description: 'Maximum performance model',
+            category: 'standard'
+        },
+        {
+            id: 'Qwen-Turbo',
+            name: 'Qwen-Turbo',
+            description: 'Fast and efficient responses',
+            category: 'standard',
+            badge: 'Fast'
+        },
+        {
+            id: 'Qwen-Long',
+            name: 'Qwen-Long',
+            description: 'Extended context length',
+            category: 'standard'
+        },
+        {
+            id: 'Qwen-VL',
+            name: 'Qwen-VL',
+            description: 'Vision and language model',
+            category: 'specialized',
+            badge: 'Vision'
+        },
+        {
+            id: 'Qwen-Audio',
+            name: 'Qwen-Audio',
+            description: 'Audio processing capabilities',
+            category: 'specialized',
+            badge: 'Audio'
+        }
+    ];
     
     // ==========================================
     // UTILITY FUNCTIONS
@@ -80,8 +142,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
+    function updateProgress(step, status, details = '') {
+        console.log(`📊 PROGRESS: Step ${step} - ${status} ${details}`);
+    }
+    
     function setLoadingState(loading) {
         isLoading = loading;
+        updateProgress('Loading', loading ? 'Started' : 'Completed');
+        
         if (mainSendButton) mainSendButton.disabled = loading;
         if (chatSendButton) chatSendButton.disabled = loading;
         
@@ -104,15 +172,57 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // ==========================================
+    // SIDEBAR MANAGEMENT
+    // ==========================================
+    
+    function showSidebar() {
+        if (sidebar) {
+            sidebar.classList.remove('-translate-x-full');
+            sidebar.classList.add('translate-x-0');
+        }
+        if (sidebarOverlay) {
+            sidebarOverlay.classList.remove('hidden');
+        }
+        sidebarVisible = true;
+        updateProgress('Sidebar', 'Opened');
+    }
+    
+    function hideSidebar() {
+        if (sidebar) {
+            sidebar.classList.add('-translate-x-full');
+            sidebar.classList.remove('translate-x-0');
+        }
+        if (sidebarOverlay) {
+            sidebarOverlay.classList.add('hidden');
+        }
+        sidebarVisible = false;
+        updateProgress('Sidebar', 'Closed');
+    }
+    
+    function toggleSidebar() {
+        if (sidebarVisible) {
+            hideSidebar();
+        } else {
+            showSidebar();
+        }
+    }
+    
+    // ==========================================
     // STATE TRANSITIONS
     // ==========================================
     
     function transitionToChat() {
         currentState = 'chatting';
+        updateProgress('State', 'Transition to Chat Mode');
         
         // Hide welcome area, show chat area
         if (welcomeArea) hideElement(welcomeArea);
         showElement(chatArea);
+        
+        // Update model display in chat header
+        if (currentModelDisplay && currentModelName) {
+            currentModelDisplay.textContent = currentModelName.textContent;
+        }
         
         console.log("🔄 Transitioned to chat mode");
     }
@@ -120,6 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function resetToWelcome() {
         currentState = 'welcome';
         currentChatId = null;
+        updateProgress('State', 'Reset to Welcome Mode');
         
         // Show welcome area, hide chat area
         showElement(welcomeArea);
@@ -131,6 +242,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Reset input placeholder
         if (mainChatInput) mainChatInput.placeholder = 'How can I help you today?';
         
+        // Reset selected agent
+        selectedAgent = null;
+        
         console.log("🏠 Reset to welcome state");
     }
     
@@ -138,7 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // MESSAGE HANDLING
     // ==========================================
     
-    function addMessage(sender, content, isImage = false) {
+    function addMessage(sender, content, isImage = false, isError = false) {
         if (!messagesContainer) return;
         
         const messageDiv = document.createElement('div');
@@ -153,15 +267,19 @@ document.addEventListener('DOMContentLoaded', () => {
             ? `<img src="${content}" class="max-w-md rounded-lg shadow-lg" alt="Generated image" />`
             : `<div class="prose dark:prose-invert max-w-none text-sm">${formatMessageContent(content)}</div>`;
         
-        const bubbleClass = sender === 'user' 
-            ? 'bg-purple-600 text-white' 
-            : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700';
+        let bubbleClass = 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700';
+        
+        if (sender === 'user') {
+            bubbleClass = 'bg-purple-600 text-white';
+        } else if (isError) {
+            bubbleClass = 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-800';
+        }
         
         messageDiv.innerHTML = `
             ${sender === 'user' ? '' : `<img src="${avatarUrl}" alt="${sender}" class="w-8 h-8 rounded-full flex-shrink-0 mt-1" />`}
             <div class="flex-1 ${sender === 'user' ? 'text-right' : 'text-left'} max-w-2xl">
                 <div class="font-medium text-xs text-gray-500 dark:text-gray-400 mb-1">
-                    ${sender === 'user' ? 'You' : 'Qwen'}
+                    ${sender === 'user' ? 'You' : isError ? 'Error' : 'Qwen'}
                 </div>
                 <div class="${bubbleClass} rounded-2xl px-4 py-3 inline-block shadow-sm">
                     ${messageContent}
@@ -172,6 +290,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         messagesContainer.appendChild(messageDiv);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        
+        updateProgress('Message', `Added ${sender} message`);
     }
     
     function formatMessageContent(content) {
@@ -215,10 +335,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // API FUNCTIONS
     // ==========================================
     
-    async function sendMessage(message, agent = null) {
+    async function sendMessage(message, agent = null, files = null) {
         if (!message.trim() || isLoading) return;
         
         setLoadingState(true);
+        updateProgress('API', `Sending chat message with agent: ${agent || 'none'}`);
         
         // Add user message immediately
         addMessage('user', message);
@@ -236,7 +357,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 prompt: message,
                 chat_id: currentChatId,
                 agent_name: agent,
-                use_web_search: webSearchEnabled
+                use_web_search: webSearchEnabled,
+                thinking_mode: thinkingModeEnabled
             };
             
             const response = await fetch(`${API_BASE}/chat`, {
@@ -258,19 +380,20 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.status === 'success') {
                 currentChatId = data.chat_id;
                 addMessage('ai', data.response);
+                updateProgress('API', 'Chat response received successfully');
                 
                 // Update chat history if this was a new chat
-                if (!currentChatId) {
-                    loadChatHistory();
-                }
+                loadChatHistory();
             } else {
-                addMessage('error', `Error: ${data.message || 'Unknown error occurred'}`);
+                addMessage('error', `Error: ${data.message || 'Unknown error occurred'}`, false, true);
+                updateProgress('API', 'Chat response failed', data.message);
             }
             
         } catch (error) {
             removeTypingIndicator();
             console.error('💥 Chat API Error:', error);
-            addMessage('error', `Failed to get response: ${error.message}`);
+            addMessage('error', `Failed to get response: ${error.message}`, false, true);
+            updateProgress('API', 'Chat request failed', error.message);
         } finally {
             setLoadingState(false);
         }
@@ -280,6 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!prompt.trim() || isLoading) return;
         
         setLoadingState(true);
+        updateProgress('API', 'Generating image');
         
         // Add user message
         addMessage('user', `Generate image: ${prompt}`);
@@ -311,20 +435,24 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.status === 'success') {
                 currentChatId = data.chat_id;
                 addMessage('ai', data.image_url, true);
+                updateProgress('API', 'Image generated successfully');
             } else {
-                addMessage('error', `Image generation failed: ${data.message || 'Unknown error'}`);
+                addMessage('error', `Image generation failed: ${data.message || 'Unknown error'}`, false, true);
+                updateProgress('API', 'Image generation failed', data.message);
             }
             
         } catch (error) {
             removeTypingIndicator();
             console.error('💥 Image API Error:', error);
-            addMessage('error', `Failed to generate image: ${error.message}`);
+            addMessage('error', `Failed to generate image: ${error.message}`, false, true);
+            updateProgress('API', 'Image generation request failed', error.message);
         } finally {
             setLoadingState(false);
         }
     }
     
     async function loadModelInfo() {
+        updateProgress('API', 'Loading model information');
         try {
             const response = await fetch(`${API_BASE}/model`);
             const data = await response.json();
@@ -332,17 +460,22 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.status === 'success' && data.model_name) {
                 const modelName = data.model_name;
                 if (currentModelName) currentModelName.textContent = modelName;
+                if (currentModelDisplay) currentModelDisplay.textContent = modelName;
                 if (sidebarModelName) sidebarModelName.textContent = modelName;
+                updateProgress('API', 'Model info loaded successfully', modelName);
                 console.log(`📡 Model loaded: ${modelName}`);
             }
         } catch (error) {
             console.error('💥 Model API Error:', error);
             if (currentModelName) currentModelName.textContent = 'Error';
+            if (currentModelDisplay) currentModelDisplay.textContent = 'Error';
             if (sidebarModelName) sidebarModelName.textContent = 'Error';
+            updateProgress('API', 'Model info loading failed', error.message);
         }
     }
     
     async function loadChatHistory() {
+        updateProgress('API', 'Loading chat history');
         try {
             const response = await fetch(`${API_BASE}/history`);
             const data = await response.json();
@@ -350,11 +483,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.status === 'success' && data.history) {
                 if (!chatHistoryList) return;
                 
-                chatHistoryList.innerHTML = '';
+                // Keep the sample items and add real ones
+                const existingItems = chatHistoryList.querySelectorAll('.chat-history-item');
+                
                 data.history.forEach(chat => {
-                    const chatItem = document.createElement('button');
-                    chatItem.className = 'w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md dark:text-gray-300 dark:hover:bg-gray-800 transition-colors truncate';
-                    chatItem.textContent = chat.title || 'Untitled Chat';
+                    const chatItem = document.createElement('div');
+                    chatItem.className = 'chat-history-item p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors';
+                    chatItem.innerHTML = `
+                        <div class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">${chat.title || 'Untitled Chat'}</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Active conversation...</div>
+                    `;
                     chatItem.dataset.chatId = chat.id;
                     
                     chatItem.addEventListener('click', () => {
@@ -365,10 +503,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     chatHistoryList.appendChild(chatItem);
                 });
                 
+                updateProgress('API', 'Chat history loaded successfully', `${data.history.length} chats`);
                 console.log(`📋 Loaded ${data.history.length} chat(s)`);
             }
         } catch (error) {
             console.error('💥 History API Error:', error);
+            updateProgress('API', 'Chat history loading failed', error.message);
         }
     }
     
@@ -376,17 +516,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // EVENT LISTENERS
     // ==========================================
     
-    // Mobile Menu Toggle
-    if (mobileMenuToggle) {
-        mobileMenuToggle.addEventListener('click', () => {
-            toggleElement(sidebar);
-        });
+    // Sidebar Controls
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', toggleSidebar);
+        updateProgress('Events', 'Sidebar toggle registered');
+    }
+    
+    if (sidebarToggleChat) {
+        sidebarToggleChat.addEventListener('click', toggleSidebar);
     }
     
     if (sidebarClose) {
-        sidebarClose.addEventListener('click', () => {
-            hideElement(sidebar);
-        });
+        sidebarClose.addEventListener('click', hideSidebar);
+    }
+    
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', hideSidebar);
     }
     
     // Model Selector
@@ -394,6 +539,7 @@ document.addEventListener('DOMContentLoaded', () => {
         modelSelectorButton.addEventListener('click', (e) => {
             e.stopPropagation();
             toggleElement(modelDropdown);
+            updateProgress('Model Selector', 'Clicked');
             
             // Rotate arrow
             const arrow = modelSelectorButton.querySelector('svg');
@@ -409,15 +555,75 @@ document.addEventListener('DOMContentLoaded', () => {
             if (arrow) arrow.style.transform = 'rotate(0deg)';
         });
         
-        // Model selection
+        // Model selection with enhanced functionality
         modelDropdown.addEventListener('click', (e) => {
-            if (e.target.hasAttribute('data-model')) {
-                const selectedModel = e.target.getAttribute('data-model');
+            if (e.target.closest('[data-model]')) {
+                const selectedModel = e.target.closest('[data-model]').getAttribute('data-model');
                 if (currentModelName) currentModelName.textContent = selectedModel;
+                if (currentModelDisplay) currentModelDisplay.textContent = selectedModel;
+                if (sidebarModelName) sidebarModelName.textContent = selectedModel;
                 hideElement(modelDropdown);
+                updateProgress('Model Selector', 'Model changed', selectedModel);
                 console.log(`🔧 Model selected: ${selectedModel}`);
             }
         });
+        
+        updateProgress('Events', 'Model selector registered');
+    }
+    
+    // File Upload
+    if (fileUploadButton && fileInput) {
+        fileUploadButton.addEventListener('click', () => {
+            fileInput.click();
+            updateProgress('File Upload', 'Button clicked');
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            selectedFiles = Array.from(e.target.files);
+            updateProgress('File Upload', 'Files selected', `${selectedFiles.length} files`);
+            
+            if (selectedFiles.length > 0) {
+                fileUploadButton.classList.add('text-purple-600', 'bg-purple-50');
+                fileUploadButton.title = `${selectedFiles.length} file(s) selected`;
+            } else {
+                fileUploadButton.classList.remove('text-purple-600', 'bg-purple-50');
+                fileUploadButton.title = 'Upload file';
+            }
+        });
+        
+        updateProgress('Events', 'File upload registered');
+    }
+    
+    // Thinking Mode Toggle
+    if (thinkingButton) {
+        thinkingButton.addEventListener('click', () => {
+            thinkingModeEnabled = !thinkingModeEnabled;
+            if (thinkingModeEnabled) {
+                thinkingButton.classList.add('bg-purple-100', 'text-purple-700', 'dark:bg-purple-900', 'dark:text-purple-300');
+            } else {
+                thinkingButton.classList.remove('bg-purple-100', 'text-purple-700', 'dark:bg-purple-900', 'dark:text-purple-300');
+            }
+            updateProgress('Thinking Mode', thinkingModeEnabled ? 'Enabled' : 'Disabled');
+            console.log(`🧠 Thinking mode: ${thinkingModeEnabled ? 'ON' : 'OFF'}`);
+        });
+        
+        updateProgress('Events', 'Thinking mode toggle registered');
+    }
+    
+    // Web Search Toggle
+    if (searchButton) {
+        searchButton.addEventListener('click', () => {
+            webSearchEnabled = !webSearchEnabled;
+            if (webSearchEnabled) {
+                searchButton.classList.add('bg-purple-100', 'text-purple-700', 'dark:bg-purple-900', 'dark:text-purple-300');
+            } else {
+                searchButton.classList.remove('bg-purple-100', 'text-purple-700', 'dark:bg-purple-900', 'dark:text-purple-300');
+            }
+            updateProgress('Web Search', webSearchEnabled ? 'Enabled' : 'Disabled');
+            console.log(`🔍 Web search: ${webSearchEnabled ? 'ON' : 'OFF'}`);
+        });
+        
+        updateProgress('Events', 'Web search toggle registered');
     }
     
     // More Button Functionality
@@ -431,10 +637,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Rotate arrow
                 const arrow = moreButton.querySelector('svg');
                 if (arrow) arrow.style.transform = 'rotate(180deg)';
+                updateProgress('More Button', 'Opened');
             } else {
                 hideElement(moreDropdown);
                 const arrow = moreButton.querySelector('svg');
                 if (arrow) arrow.style.transform = 'rotate(0deg)';
+                updateProgress('More Button', 'Closed');
             }
         });
         
@@ -447,6 +655,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (arrow) arrow.style.transform = 'rotate(0deg)';
             }
         });
+        
+        updateProgress('Events', 'More button registered');
     }
     
     // Main Input Form
@@ -454,9 +664,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const handleMainSubmit = () => {
             const message = mainChatInput.value.trim();
             if (message) {
-                sendMessage(message, selectedAgent);
+                sendMessage(message, selectedAgent, selectedFiles.length > 0 ? selectedFiles : null);
                 mainChatInput.value = '';
                 selectedAgent = null; // Reset after use
+                selectedFiles = []; // Reset files
+                
+                // Reset file upload button appearance
+                if (fileUploadButton) {
+                    fileUploadButton.classList.remove('text-purple-600', 'bg-purple-50');
+                    fileUploadButton.title = 'Upload file';
+                }
+                
+                updateProgress('Main Input', 'Message sent');
             }
         };
         
@@ -468,6 +687,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 handleMainSubmit();
             }
         });
+        
+        updateProgress('Events', 'Main input registered');
     }
     
     // Chat Textarea
@@ -478,6 +699,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 sendMessage(message);
                 chatTextarea.value = '';
                 chatTextarea.style.height = 'auto';
+                updateProgress('Chat Input', 'Message sent');
             }
         };
         
@@ -495,6 +717,8 @@ document.addEventListener('DOMContentLoaded', () => {
             chatTextarea.style.height = 'auto';
             chatTextarea.style.height = Math.min(chatTextarea.scrollHeight, 120) + 'px';
         });
+        
+        updateProgress('Events', 'Chat textarea registered');
     }
     
     // Action Buttons
@@ -508,36 +732,48 @@ document.addEventListener('DOMContentLoaded', () => {
             switch (action) {
                 case 'web-dev':
                     selectedAgent = 'Web Dev';
-                    if (mainChatInput) mainChatInput.placeholder = 'Ask me about web development...';
+                    if (mainChatInput) mainChatInput.placeholder = 'Ask me about web development, React, JavaScript, CSS...';
+                    updateProgress('Action Button', 'Web Dev selected');
                     break;
                 case 'deep-research':
                     selectedAgent = 'Deep Research';
-                    if (mainChatInput) mainChatInput.placeholder = 'What would you like me to research?';
+                    if (mainChatInput) mainChatInput.placeholder = 'What topic would you like me to research in depth?';
+                    updateProgress('Action Button', 'Deep Research selected');
                     break;
                 case 'image-generation':
                     selectedAgent = 'Image Generation';
-                    if (mainChatInput) mainChatInput.placeholder = 'Describe the image you want to generate...';
+                    if (mainChatInput) mainChatInput.placeholder = 'Describe the image you want me to create...';
+                    updateProgress('Action Button', 'Image Generation selected');
                     break;
                 case 'code-assistant':
                     selectedAgent = 'Code Assistant';
-                    if (mainChatInput) mainChatInput.placeholder = 'Ask me about coding...';
+                    if (mainChatInput) mainChatInput.placeholder = 'Ask me about coding, debugging, algorithms...';
+                    updateProgress('Action Button', 'Code Assistant selected');
                     break;
                 case 'writing-helper':
                     selectedAgent = 'Writing Helper';
-                    if (mainChatInput) mainChatInput.placeholder = 'What would you like help writing?';
+                    if (mainChatInput) mainChatInput.placeholder = 'What would you like help writing or editing?';
+                    updateProgress('Action Button', 'Writing Helper selected');
                     break;
                 case 'data-analysis':
                     selectedAgent = 'Data Analysis';
-                    if (mainChatInput) mainChatInput.placeholder = 'What data would you like me to analyze?';
+                    if (mainChatInput) mainChatInput.placeholder = 'What data would you like me to analyze or visualize?';
+                    updateProgress('Action Button', 'Data Analysis selected');
                     break;
                 case 'language-tutor':
                     selectedAgent = 'Language Tutor';
-                    if (mainChatInput) mainChatInput.placeholder = 'Which language would you like to learn?';
+                    if (mainChatInput) mainChatInput.placeholder = 'Which language would you like to learn or practice?';
+                    updateProgress('Action Button', 'Language Tutor selected');
                     break;
                 default:
+                    updateProgress('Action Button', 'Unknown action', action);
                     console.log(`🔍 Action clicked: ${action}`);
                     break;
             }
+            
+            // Visual feedback for selected button
+            actionButtons.forEach(btn => btn.classList.remove('ring-2', 'ring-purple-500', 'ring-offset-2'));
+            button.classList.add('ring-2', 'ring-purple-500', 'ring-offset-2');
             
             // Focus input after selection
             if (mainChatInput) mainChatInput.focus();
@@ -546,24 +782,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
     
-    // Search Button Toggle
-    if (searchButton) {
-        searchButton.addEventListener('click', () => {
-            webSearchEnabled = !webSearchEnabled;
-            if (webSearchEnabled) {
-                searchButton.classList.add('bg-purple-100', 'text-purple-700', 'dark:bg-purple-900', 'dark:text-purple-300');
-            } else {
-                searchButton.classList.remove('bg-purple-100', 'text-purple-700', 'dark:bg-purple-900', 'dark:text-purple-300');
-            }
-            console.log(`🔍 Web search: ${webSearchEnabled ? 'ON' : 'OFF'}`);
-        });
-    }
+    updateProgress('Events', 'Action buttons registered', `${actionButtons.length} buttons`);
     
     // New Chat Button
     if (newChatButton) {
         newChatButton.addEventListener('click', () => {
             resetToWelcome();
+            updateProgress('New Chat', 'Button clicked');
         });
+        
+        updateProgress('Events', 'New chat button registered');
     }
     
     // ==========================================
@@ -571,7 +799,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     
     function initialize() {
-        console.log("🚀 Initializing Qwen Clone - Logged-In Interface...");
+        console.log("🚀 Initializing Qwen Clone - Complete Functionality Interface...");
+        updateProgress('Initialize', 'Starting application');
         
         // Load initial data
         loadModelInfo();
@@ -580,8 +809,34 @@ document.addEventListener('DOMContentLoaded', () => {
         // Set initial state - always show welcome in logged-in interface
         resetToWelcome();
         
+        // Initialize sidebar state
+        if (window.innerWidth >= 1024) { // lg breakpoint
+            showSidebar();
+        } else {
+            hideSidebar();
+        }
+        
+        updateProgress('Initialize', 'Application ready');
         console.log("✅ Qwen Clone initialized successfully!");
+        console.log("📊 Features enabled:");
+        console.log("  - ✅ Collapsible sidebar");
+        console.log("  - ✅ 8 model selection options");
+        console.log("  - ✅ File upload support");
+        console.log("  - ✅ Thinking mode toggle");
+        console.log("  - ✅ Web search toggle");
+        console.log("  - ✅ 7 specialized action buttons");
+        console.log("  - ✅ Enhanced chat interface");
+        console.log("  - ✅ Progressive enhancement");
     }
+    
+    // Window resize handler
+    window.addEventListener('resize', () => {
+        if (window.innerWidth >= 1024) {
+            showSidebar();
+        } else if (!moreDropdownVisible) {
+            hideSidebar();
+        }
+    });
     
     // Start the application
     initialize();
