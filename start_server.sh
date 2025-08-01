@@ -72,7 +72,7 @@ show_status() {
         echo "🌐 Local access: http://127.0.0.1:8010"
         echo "🔗 Preview domain should now work!"
         echo "🔍 Test connection:"
-        status_code=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:80/ 2>/dev/null)
+        status_code=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8010/ 2>/dev/null)
         if [ "$status_code" = "200" ]; then
             echo "   ✅ Frontend accessible (HTTP $status_code)"
         else
