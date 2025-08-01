@@ -68,8 +68,8 @@ show_status() {
     check_server
     
     if pgrep -f "api_server.py" > /dev/null; then
-        echo "📡 Server URL: http://0.0.0.0:80 (External access enabled)"
-        echo "🌐 Local access: http://127.0.0.1:80"
+        echo "📡 Server URL: http://0.0.0.0:8010 (External access enabled)"
+        echo "🌐 Local access: http://127.0.0.1:8010"
         echo "🔗 Preview domain should now work!"
         echo "🔍 Test connection:"
         status_code=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:80/ 2>/dev/null)
