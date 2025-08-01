@@ -28,7 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let useWebSearch = false; // For Mission 3
 
     // --- Constants ---
-    const API_BASE_URL = ''; // Use relative URLs to work with any domain
+    // In preview mode, API calls should go to /api endpoints on the same domain
+    const API_BASE_URL = '/api'; // Use /api prefix for Kubernetes ingress routing
     const sendButtonIcon = `<i class="iconfont leading-none icon-line-waveform !text-20 text-[#ffffff]" style=""></i>`;
     const loadingSpinner = `<div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>`;
 
