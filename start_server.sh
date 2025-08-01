@@ -132,7 +132,7 @@ case "$1" in
         echo "  ./start_server.sh status   # Check if running"
         echo "  ./start_server.sh logs     # View logs"
         echo ""
-        echo "🌐 Application URL: http://127.0.0.1:5000"
+        echo "🌐 Application URL: http://127.0.0.1:8010"
         exit 1
         ;;
 esac
