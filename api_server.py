@@ -383,7 +383,7 @@ async def history_handler():
     
     return jsonify(result), 200 if result['status'] == 'success' else 500
 
-@app.route('/model', methods=['GET'])
+@app.route('/api/model', methods=['GET'])
 async def model_handler():
     """
     Flask endpoint to fetch the current model name.
