@@ -161,8 +161,22 @@ curl -X POST http://127.0.0.1:8001/api/chat \
 tail -n 50 /var/log/supervisor/backend.err.log
 
 # Common fixes:
-pip install -r /app/backend/requirements.txt
+pip install -r /app/requirements.txt
+pip install markupsafe  # Often needed
 python -m playwright install chromium
+sudo supervisorctl restart backend
+```
+
+### Playwright Browser Issues
+```bash
+# Install all Playwright browsers
+cd /app && python -m playwright install
+
+# Or install just Chromium with correct path
+PLAYWRIGHT_BROWSERS_PATH=/root/.cache/ms-playwright \
+  python -m playwright install chromium
+
+# Restart backend after browser install
 sudo supervisorctl restart backend
 ```
 
@@ -174,23 +188,13 @@ curl -I http://127.0.0.1:3000
 # Should return: HTTP/1.0 200 OK
 ```
 
-### Browser Automation Issues
-```bash
-# Reinstall Playwright browsers
-PLAYWRIGHT_BROWSERS_PATH=/root/.cache/ms-playwright \
-  /root/.venv/bin/python -m playwright install chromium
-
-# Restart backend after browser install
-sudo supervisorctl restart backend
-```
-
 ### API Not Responding
 ```bash
 # Test basic connectivity
 curl -v http://127.0.0.1:8001/api/model
 
 # Check if backend process is running
-ps aux | grep uvicorn
+ps aux | grep server.py
 ```
 
 ## 📁 Key Files & Directories
