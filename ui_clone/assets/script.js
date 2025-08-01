@@ -913,14 +913,64 @@ document.addEventListener('DOMContentLoaded', () => {
     
     updateProgress('Events', 'Action buttons registered', `${actionButtons.length} buttons`);
     
-    // New Chat Button
-    if (newChatButton) {
-        newChatButton.addEventListener('click', () => {
-            resetToWelcome();
-            updateProgress('New Chat', 'Button clicked');
+    // Voice Input Button
+    if (voiceInputButton) {
+        voiceInputButton.addEventListener('click', () => {
+            toggleVoiceInput();
+            updateProgress('Voice Input', isVoiceRecording ? 'Started recording' : 'Stopped recording');
+        });
+        updateProgress('Events', 'Voice input button registered');
+    }
+    
+    // Camera Input Button  
+    if (cameraInputButton && cameraInput) {
+        cameraInputButton.addEventListener('click', () => {
+            cameraInput.click();
+            updateProgress('Camera Input', 'Button clicked');
         });
         
-        updateProgress('Events', 'New chat button registered');
+        cameraInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            if (files.length > 0) {
+                selectedFiles = [...selectedFiles, ...files];
+                cameraInputButton.classList.add('text-purple-600', 'bg-purple-50');
+                cameraInputButton.title = `${files.length} image(s) captured`;
+                updateProgress('Camera Input', 'Images captured', `${files.length} files`);
+            }
+        });
+        
+        updateProgress('Events', 'Camera input registered');
+    }
+    
+    // Test Models Button
+    if (testModelsButton) {
+        testModelsButton.addEventListener('click', () => {
+            testSelectedModels();
+            updateProgress('Model Testing', 'Started model testing');
+        });
+        updateProgress('Events', 'Test models button registered');
+    }
+    
+    // Quick Action Buttons
+    quickActionButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const action = button.getAttribute('data-quick');
+            handleQuickAction(action);
+            updateProgress('Quick Action', `${action} executed`);
+        });
+    });
+    
+    if (quickActionButtons.length > 0) {
+        updateProgress('Events', 'Quick action buttons registered', `${quickActionButtons.length} buttons`);
+    }
+    
+    // Voice Input Button
+    if (voiceInputButton) {
+        voiceInputButton.addEventListener('click', () => {
+            toggleVoiceInput();
+            updateProgress('Voice Input', isVoiceRecording ? 'Started recording' : 'Stopped recording');
+        });
+        updateProgress('Events', 'Voice input button registered');
     }
     
     // ==========================================
