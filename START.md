@@ -259,8 +259,22 @@ ps aux | grep server.py
 
 Your Qwen AI automation system is **production-ready** and fully functional!
 
-**Access URL**: http://127.0.0.1:3000
+**✅ SYSTEM STATUS: RUNNING**
 
-**API Status**: ✅ Online and working
+**Access URLs**: 
+- Frontend: http://127.0.0.1:3000
+- Backend API: http://127.0.0.1:8001/api
+
+**✅ Core Features Working:**
+- ✅ Chat messaging with AI
+- ✅ Image generation  
+- ✅ Model information
+- ✅ File uploads
+- ✅ Agent selection
+- ✅ Web search integration
+- ✅ Conversation context
+- ✅ Frontend UI
 
 **Happy chatting with AI!** 🚀
+
+**Last Updated**: August 2025 - All dependencies fixed and system operational
