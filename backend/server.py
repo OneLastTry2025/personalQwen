@@ -403,15 +403,71 @@ async def model_handler():
         browser_manager.release_page(page)
     return jsonify(result), 200 if result['status'] == 'success' else 500
 
-@app.route('/api/models', methods=['GET'])
-async def models_handler():
+@app.route('/api/model_count', methods=['GET'])
+async def model_count_handler():
     """
-    API endpoint to fetch the list of available models.
+    API endpoint to get detailed model count information including live count from Qwen.
     """
     page = await browser_manager.get_page()
     try:
-        result = await get_available_models(page)
+        print("[*] Fetching live model count from Qwen...")
+        
+        # Navigate to main page if needed
+        if "/c/" in page.url:
+            await page.goto(QWEN_URL, wait_until="networkidle")
+        
+        # Try to get the live model count by attempting to open model selector
+        try:
+            model_selector_button = page.locator('#model-selector-button')
+            await model_selector_button.wait_for(state="visible", timeout=10000)
+            await model_selector_button.click()
+            
+            # Wait for dropdown and count models
+            dropdown_menu = page.locator('div[role="menu"]')
+            await dropdown_menu.wait_for(state="visible", timeout=10000)
+            
+            model_items = dropdown_menu.locator('a[role="menuitem"]')
+            live_count = await model_items.count()
+            
+            # Close dropdown
+            await page.locator('body').click()
+            
+            result = {
+                "status": "success",
+                "live_count": live_count,
+                "static_count": 15,  # Our hardcoded models in the UI
+                "categories": {
+                    "latest": 3,
+                    "standard": 7,
+                    "specialized": 5
+                },
+                "details": {
+                    "source": "live_qwen_data",
+                    "last_updated": "real_time"
+                }
+            }
+            print(f"[+] Live model count: {live_count}")
+            
+        except Exception as e:
+            print(f"[!] Could not get live count, using static data: {e}")
+            # Fallback to static count
+            result = {
+                "status": "success",
+                "live_count": None,
+                "static_count": 15,
+                "categories": {
+                    "latest": 3,
+                    "standard": 7,
+                    "specialized": 5
+                },
+                "details": {
+                    "source": "static_data",
+                    "error": str(e)
+                }
+            }
+            
     except Exception as e:
+        print(f"\n[!] An error occurred while fetching model count: {e}")
         result = {"status": "error", "message": str(e)}
     finally:
         browser_manager.release_page(page)
