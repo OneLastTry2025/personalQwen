@@ -322,7 +322,7 @@ async def chat_handler():
 
     return jsonify(result), 200 if result['status'] == 'success' else 500
 
-@app.route('/image', methods=['POST'])
+@app.route('/api/image', methods=['POST'])
 async def image_handler():
     """
     Flask endpoint to handle image generation requests.
