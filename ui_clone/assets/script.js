@@ -1172,6 +1172,9 @@ document.addEventListener('DOMContentLoaded', () => {
             hideSidebar();
         }
         
+        // Initialize UI stats
+        updateUIStats();
+        
         updateProgress('Initialize', 'Application ready');
         console.log("✅ Qwen Clone initialized successfully!");
         console.log("📊 Features enabled:");
