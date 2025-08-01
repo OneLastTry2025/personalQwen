@@ -1,4 +1,4 @@
-/* Qwen Clone - Custom Styles for Pixel Perfect Implementation */
+/* Qwen Clone - Pixel Perfect Logged-In Interface Styles */
 
 /* Reset and Base Styles */
 * {
@@ -10,6 +10,8 @@ body {
     line-height: 1.6;
     color: #374151;
     background-color: #ffffff;
+    margin: 0;
+    padding: 0;
 }
 
 /* Dark mode support */
@@ -49,6 +51,11 @@ body {
     background: #64748b;
 }
 
+/* Smooth transitions for all interactive elements */
+button, input, textarea, a {
+    transition: all 0.2s ease-in-out;
+}
+
 /* Input and Form Styles */
 input[type="text"], textarea {
     transition: all 0.2s ease-in-out;
@@ -58,24 +65,51 @@ input[type="text"]:focus, textarea:focus {
     box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1);
 }
 
-/* Button Hover Effects */
-button {
-    transition: all 0.2s ease-in-out;
-}
-
-/* Action Button Styles */
+/* Action Button Styles with Enhanced Hover Effects */
 .action-button {
     transition: all 0.2s ease-in-out;
     transform: translateY(0);
+    position: relative;
+    overflow: hidden;
 }
 
 .action-button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
 .dark .action-button:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+.action-button:active {
+    transform: translateY(0);
+}
+
+/* Model Selector Enhancements */
+#model-selector-button svg {
+    transition: transform 0.2s ease-in-out;
+}
+
+#model-dropdown {
+    transition: all 0.15s ease-out;
+    transform-origin: top left;
+}
+
+#model-dropdown.hidden {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+}
+
+/* More Button Dropdown Animation */
+#more-dropdown {
+    transition: all 0.3s ease-out;
+    transform-origin: center top;
+}
+
+#more-dropdown.hidden {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
 }
 
 /* Message Styles */
@@ -114,7 +148,7 @@ button {
     background-color: #1f2937;
 }
 
-/* Loading Animation */
+/* Enhanced Loading Animation */
 @keyframes spin {
     from {
         transform: rotate(0deg);
@@ -128,20 +162,132 @@ button {
     animation: spin 1s linear infinite;
 }
 
-/* Fade Transitions */
-.fade-in {
-    animation: fadeIn 0.3s ease-in-out;
+/* Typing Indicator Animation */
+@keyframes bounce {
+    0%, 80%, 100% {
+        transform: translateY(0);
+        opacity: 0.5;
+    }
+    40% {
+        transform: translateY(-8px);
+        opacity: 1;
+    }
 }
 
+.animate-bounce {
+    animation: bounce 1.4s infinite;
+}
+
+/* Fade In Animation for Messages */
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(20px);
     }
     to {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.4s ease-out;
+}
+
+/* Sidebar Enhancements */
+#sidebar {
+    transition: transform 0.3s ease-in-out;
+}
+
+@media (max-width: 768px) {
+    #sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 50;
+        height: 100vh;
+        transform: translateX(-100%);
+    }
+    
+    #sidebar:not(.hidden) {
+        transform: translateX(0);
+    }
+}
+
+/* Chat Message Bubble Enhancements */
+.chat-bubble {
+    position: relative;
+    word-wrap: break-word;
+    max-width: 70%;
+}
+
+.chat-bubble::before {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+}
+
+/* User message bubble tail */
+.user-bubble::before {
+    right: -8px;
+    top: 10px;
+    border-left: 8px solid #9333ea;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+}
+
+/* AI message bubble tail */
+.ai-bubble::before {
+    left: -8px;
+    top: 10px;
+    border-right: 8px solid #f3f4f6;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+}
+
+.dark .ai-bubble::before {
+    border-right-color: #374151;
+}
+
+/* Search Button Active State */
+.search-active {
+    background-color: #f3e8ff !important;
+    color: #7c3aed !important;
+}
+
+.dark .search-active {
+    background-color: #581c87 !important;
+    color: #c4b5fd !important;
+}
+
+/* Enhanced Button Hover States */
+button:hover {
+    transform: translateY(-1px);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+/* Send Button Special Animation */
+#main-send-button, #chat-send-button {
+    transition: all 0.2s ease-in-out;
+}
+
+#main-send-button:hover, #chat-send-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(147, 51, 234, 0.4);
+}
+
+/* Input Container Enhancements */
+.input-container {
+    transition: all 0.2s ease-in-out;
+}
+
+.input-container:focus-within {
+    box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1);
+    border-color: #9333ea;
 }
 
 /* Mobile Responsive Adjustments */
@@ -159,9 +305,13 @@ button {
         max-width: 100%;
         padding: 0 1rem;
     }
+    
+    #sidebar {
+        width: 280px;
+    }
 }
 
-/* Focus Styles */
+/* Focus Styles for Accessibility */
 .focus-visible:focus {
     outline: 2px solid #8b5cf6;
     outline-offset: 2px;
@@ -179,44 +329,7 @@ button {
     background-clip: text;
 }
 
-/* Sidebar Animations */
-.sidebar-enter {
-    transform: translateX(-100%);
-}
-
-.sidebar-enter-active {
-    transform: translateX(0);
-    transition: transform 0.3s ease-in-out;
-}
-
-.sidebar-exit {
-    transform: translateX(0);
-}
-
-.sidebar-exit-active {
-    transform: translateX(-100%);
-    transition: transform 0.3s ease-in-out;
-}
-
-/* Message Bubble Animations */
-.message-enter {
-    opacity: 0;
-    transform: translateY(20px);
-}
-
-.message-enter-active {
-    opacity: 1;
-    transform: translateY(0);
-    transition: all 0.3s ease-out;
-}
-
-/* Input Focus Ring */
-.input-focus-ring:focus {
-    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-    border-color: #8b5cf6;
-}
-
-/* Button Loading State */
+/* Loading States */
 .btn-loading {
     position: relative;
     color: transparent !important;
@@ -256,16 +369,48 @@ button {
     background-color: #7f1d1d;
 }
 
-/* Accessibility */
-@media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-    }
+/* Enhanced Textarea */
+#chat-textarea {
+    min-height: 44px;
+    max-height: 120px;
+    resize: none;
 }
 
-/* High contrast mode */
+/* Welcome Area Animation */
+#welcome-area {
+    animation: fadeIn 0.6s ease-out;
+}
+
+/* Chat Area Animation */
+#chat-area {
+    animation: fadeIn 0.4s ease-out;
+}
+
+/* Hover Effects for Navigation */
+.nav-item:hover {
+    background-color: #f9fafb;
+    transform: translateX(2px);
+}
+
+.dark .nav-item:hover {
+    background-color: #374151;
+}
+
+/* Chat History Item Styles */
+#chat-history-list button {
+    transition: all 0.2s ease-in-out;
+}
+
+#chat-history-list button:hover {
+    transform: translateX(4px);
+    background-color: #f3f4f6;
+}
+
+.dark #chat-history-list button:hover {
+    background-color: #374151;
+}
+
+/* Accessibility - High contrast mode */
 @media (prefers-contrast: high) {
     .action-button {
         border-width: 2px;
@@ -274,4 +419,95 @@ button {
     input, textarea {
         border-width: 2px;
     }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Avatar Enhancements */
+.avatar {
+    transition: transform 0.2s ease-in-out;
+}
+
+.avatar:hover {
+    transform: scale(1.1);
+}
+
+/* Message Container Hover Effects */
+.message-container:hover .message-actions {
+    opacity: 1;
+    visibility: visible;
+}
+
+.message-actions {
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Gradient Backgrounds */
+.gradient-bg {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Glass Effect */
+.glass-effect {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .glass-effect {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Pulse Animation for Active States */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Enhanced Dropdown Shadows */
+.dropdown-shadow {
+    box-shadow: 
+        0 10px 25px rgba(0, 0, 0, 0.1),
+        0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.dark .dropdown-shadow {
+    box-shadow: 
+        0 10px 25px rgba(0, 0, 0, 0.4),
+        0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Smooth Scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Performance Optimizations */
+.transform-gpu {
+    transform: translateZ(0);
+    will-change: transform;
+}
+
+/* Enhanced Button Press Effect */
+.btn-press:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease-in-out;
 }
