@@ -381,7 +381,29 @@ netstat -tulpn | grep 8001
 
 ---
 
-## 🎉 Ready to Use!
+## 🚀 Recent Enhancements (August 2025)
+
+### ✨ **NEW: Enhanced Model Selector with Live Count**
+- **15 Total Models** organized in 3 categories:
+  - **Latest Models (3)**: Qwen3-235B-A22B-2507, Qwen3-Plus, Qwen2.5-Turbo  
+  - **Standard Models (7)**: Qwen-Max, Qwen-Turbo, Qwen-Long, and 4 instruction models
+  - **Specialized Models (5)**: Vision, Audio, and Coder variants
+- **Live Model Count Detection**: Attempts to fetch real-time count from Qwen, falls back to static count
+- **Enhanced UI**: Color-coded categories, model descriptions, feature badges
+- **Model Count Badge**: Shows "15 Models" or "X Models (Live)" when available
+
+### 🔗 **NEW API Endpoints**
+```bash
+# Get detailed model count information
+curl http://127.0.0.1:8001/api/model_count
+# Returns: {"live_count": X, "static_count": 15, "categories": {...}}
+```
+
+### 🎨 **Pixel-Perfect UI Cloning Improvements**
+- Enhanced model dropdown with live statistics
+- Improved responsive design
+- Better error handling and fallback systems
+- Real-time model count updates
 
 Your Qwen AI automation system is **production-ready** and fully functional!
 
