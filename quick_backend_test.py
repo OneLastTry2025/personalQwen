@@ -9,7 +9,7 @@ import sys
 import json
 
 class QuickQwenAPITester:
-    def __init__(self, base_url="https://6fb63cf7-6bad-471c-aed2-6f03eb3d2d16.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://4c8c8998-d6b5-44d2-8db9-98f33b7eed83.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
